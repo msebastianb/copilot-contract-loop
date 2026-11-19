@@ -10,7 +10,7 @@
 
 ---
 
-![The Copilot contract loop: the Copilot CLI session writes the contract and the acceptance checks; cpl.py drives a Haiku coder through them, a typed judge gates what the checks cannot see, and every run ends in a verdict](docs/architecture.svg)
+![The Copilot contract loop: the strongest model in your chat writes the contract and the acceptance checks; cpl.py drives a Haiku coder through them, a typed judge gates what the checks cannot see, and every run ends in a verdict](docs/architecture.svg)
 
 ---
 
@@ -18,7 +18,7 @@
 
 Asking a cheap model to "build the feature" fails in a predictable way. It wanders outside the files it should touch, it declares victory without proof, and you spend more reading its output than you saved. Asking the strong model to do everything works, but the bill is high.
 
-The loop splits the work by what each side does well. Your Copilot CLI session writes the contract: the stack decision, small tasks, the files each task may touch, and the checks that prove each task done. A script then runs the loop with `copilot -p` on a cheap model. Executable checks decide "done", a judge gates what checks cannot see, and every run ends in a verdict.
+The loop splits the work by what each side does well. The architect, the strongest model you have selected in the current chat, writes the contract: the stack decision, small tasks, the files each task may touch, and the checks that prove each task done. A script then runs the loop with `copilot -p` on Haiku 5.5 at max effort. Executable checks decide "done", a judge gates what checks cannot see, and every run ends in a verdict.
 
 Copilot CLI has no structured-output flag, so the judge answers in plain JSON that the script checks. Isolation comes from a fresh Copilot home for every call.
 
@@ -31,10 +31,10 @@ Copilot CLI has no structured-output flag, so the judge answers in plain JSON th
 
 | Role | Default | Job | Tools |
 |---|---|---|---|
-| Architect | your Copilot CLI session, on a strong model | writes the contract and the checks, settles escalations, gives the verdict | n/a |
-| Scout | `copilot -p --model claude-haiku-4.5` | reads the repo, writes `brief.md` (asked to keep it to 60 lines) | view, grep, glob (read only) |
-| Coder | `copilot -p --model claude-haiku-4.5` | implements one task at a time; sees only its spec | view, create, edit, grep, glob, bash |
-| Judge | `copilot -p --model claude-haiku-4.5` | typed gates: scope, repeated failure, screenshot, risk per file | view only, with reads denied (the visual gate may read its image) |
+| Architect | the strongest model selected in your current chat (`/model`) | writes the contract and the checks, settles escalations, gives the verdict | n/a |
+| Scout | `copilot -p --model claude-haiku-5.5 --reasoning-effort max` | reads the repo, writes `brief.md` (asked to keep it to 60 lines) | view, grep, glob (read only) |
+| Coder | `copilot -p --model claude-haiku-5.5 --reasoning-effort max` | implements one task at a time; sees only its spec | view, create, edit, grep, glob, bash |
+| Judge | `copilot -p --model claude-haiku-5.5 --reasoning-effort max` | typed gates: scope, repeated failure, screenshot, risk per file | view only, with reads denied (the visual gate may read its image) |
 | Checks | your commands | the only source of truth for "done" | n/a |
 
 ## How a run goes
@@ -104,7 +104,7 @@ Not enforced:
 
 ## Configuration
 
-`skills/copilot-contract-loop/roles.json` holds the models, tool lists, allow and deny rules, the environment allowlist, spend caps and limits. Override it per machine with `~/.config/copilot-contract-loop/roles.json` or the `COPILOT_CONTRACT_LOOP_ROLES` variable. Models are any model ID that `copilot --model` accepts, for example `claude-haiku-4.5` or `gpt-5.4-nano`. Change a model there, not in the prompts.
+`skills/copilot-contract-loop/roles.json` holds the models, tool lists, allow and deny rules, the environment allowlist, spend caps and limits. Override it per machine with `~/.config/copilot-contract-loop/roles.json` or the `COPILOT_CONTRACT_LOOP_ROLES` variable. Models are any model ID that `copilot --model` accepts, for example `claude-haiku-5.5` or `gpt-5.4-nano`. Change a model there, not in the prompts. `effort` is passed as `--reasoning-effort`. It defaults to `max`; `high` or `medium` spend fewer reasoning tokens per call.
 
 The override merges one level down (for example `coder.model`), but a list replaces the default list. If you set `deny`, copy the rules you want to keep.
 
@@ -144,7 +144,7 @@ Everything lives outside the repo, so a failed run never pollutes your worktree:
 ## Requirements
 
 - GitHub Copilot CLI, logged in with `copilot login`. Written against Copilot CLI 1.0.114.
-- Each model call uses premium requests. On the account used for testing, `claude-haiku-4.5` cost 0.33 premium requests per call.
+- Each model call uses premium requests. On the account used for testing, `claude-haiku-5.5` costs 1 premium request per call (checked live), and `claude-haiku-4.5` cost 0.33. Max effort can add reasoning tokens on top of that.
 - Python 3.9+ and git. `cpl.py` uses the standard library only.
 - Optional, for the visual gate: Chrome or Chromium, used headless for screenshots.
 
@@ -160,6 +160,7 @@ python3 -m unittest discover -s tests -v
 
 - Flags and event shapes were checked against Copilot CLI 1.0.114: a refused call, a file write, the JSON result and the usage file.
 - A full `init`, `seal`, `run` and `close` ran on a scratch repository with `claude-haiku-4.5`. The coder finished in one attempt, the scope gate accepted the diff (p=1.00), the checks and the launch passed, and the commit held only the file the task allowed.
+- The default configuration (`claude-haiku-5.5` at max effort) was checked with one live call: it returned OK and cost one premium request.
 - Not yet run live: the visual gate, escalation against a real model, and a login that lives only in `~/.copilot/config.json`.
 
 ## Design notes
@@ -176,7 +177,7 @@ python3 -m unittest discover -s tests -v
 
 ## Notes on GitHub Copilot CLI
 
-- Models run through `copilot -p`, with `claude-haiku-4.5` as the default. Any model ID that `copilot --model` accepts works in `roles.json`.
+- Models run through `copilot -p`, with `claude-haiku-5.5` at max effort as the default. Any model ID that `copilot --model` accepts works in `roles.json`.
 - Isolation uses a fresh `COPILOT_HOME` per call. No settings, hooks, MCP servers, skills or saved approvals from your own Copilot setup reach a run.
 - Tool permissions use `--available-tools`, `--allow-tool` and `--deny-tool`. Copilot CLI shows a model only the tools it names, and a deny rule wins over every allow.
 - The judge has no `--json-schema`. Its answer is parsed from text and checked against the questions.

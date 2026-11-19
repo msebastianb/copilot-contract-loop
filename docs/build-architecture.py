@@ -74,7 +74,7 @@ def text(x, y, s, size: float = 12, color=MUTED, anchor="start", weight=None):
 
 # ---------- document ----------
 add(f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {W} {H}" width="{W}" height="{H}" role="img" '
-    f'aria-label="The Copilot contract loop: the Copilot CLI session writes the contract and the acceptance '
+    f'aria-label="The Copilot contract loop: the strongest chat model writes the contract and the acceptance '
     f'checks, cpl.py drives a Haiku coder through them, a typed judge gates what the checks cannot see, and '
     f'cpl.py close reports a verdict">')
 add('<defs>')
@@ -88,11 +88,11 @@ add(f'<rect width="{W}" height="{H}" fill="url(#grid)"/>')
 add(f'<rect x="0" y="0" width="{W}" height="3" fill="#38bdf8" opacity="0.75"/>')
 
 text(48, 44, "contract-first coding loop · GitHub Copilot CLI", 20, INK, weight="600")
-text(48, 66, "Copilot writes the contract; a script drives a cheap Haiku coder through it.", 12, FAINT)
+text(48, 66, "The strongest model in your chat writes the contract; a script drives a cheap Haiku coder through it.", 12, FAINT)
 
 # 1 - architect and contract
-box(48, 100, 330, 104, "violet", "ARCHITECT: Copilot CLI session", [
-    "a strong model, used where it pays",
+box(48, 100, 330, 104, "violet", "ARCHITECT: strongest chat model", [
+    "the strongest model you have selected",
     "writes the checks and the contract,",
     "settles escalations, gives the verdict",
 ], title_size=15)
@@ -112,7 +112,7 @@ add('<rect x="48" y="250" width="904" height="336" rx="14" fill="rgba(2,6,23,0.5
 text(68, 276, "THE LOOP: cpl.py run", 13.5, INK, weight="600")
 
 box(72, 316, 250, 104, "emerald", "CODER", [
-    "copilot -p, claude-haiku-4.5", "fresh home, no AGENTS.md", "sees only its task spec",
+    "copilot -p, claude-haiku-5.5", "max effort, fresh home", "sees only its task spec",
 ], title_size=15)
 box(362, 316, 250, 104, "slate", "WORKING TREE", [
     "revert guard per attempt:", "protected and out-of-scope", "files are thrown away",
