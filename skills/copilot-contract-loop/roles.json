@@ -1,0 +1,65 @@
+{
+  "isolate_home": true,
+  "scout": {
+    "model": "claude-haiku-4.5",
+    "tools": ["view", "grep", "glob"],
+    "allow": ["read"],
+    "max_ai_credits": 50,
+    "budget_s": 300
+  },
+  "coder": {
+    "model": "claude-haiku-4.5",
+    "tools": ["view", "create", "edit", "grep", "glob", "bash"],
+    "allow": ["read", "write", "shell"],
+    "max_ai_credits": 200,
+    "budget_s": 900
+  },
+  "judge": {
+    "model": "claude-haiku-4.5",
+    "tools": ["view"],
+    "allow": [],
+    "deny_extra": ["read"],
+    "max_ai_credits": 30,
+    "budget_s": 300,
+    "accept": 0.8,
+    "reject": 0.2
+  },
+  "deny": [
+    "read(.env)",
+    "read(.env.*)",
+    "write(.env)",
+    "write(.env.*)",
+    "read(~/.ssh/**)",
+    "read(~/.aws/**)",
+    "read(~/.gnupg/**)",
+    "read(~/.netrc)",
+    "read(~/.config/gh/**)",
+    "shell(cat)",
+    "shell(env)",
+    "shell(printenv)",
+    "shell(sudo)",
+    "shell(curl)",
+    "shell(wget)",
+    "shell(ssh)",
+    "shell(scp)",
+    "shell(nc)",
+    "shell(gh)",
+    "shell(rm)",
+    "shell(git commit)",
+    "shell(git push)",
+    "shell(git stash)",
+    "shell(git checkout)",
+    "shell(git switch)",
+    "shell(git reset)",
+    "shell(git merge)",
+    "shell(git rebase)"
+  ],
+  "env_allow": [],
+  "limits": {
+    "attempts": 3,
+    "check_timeout_s": 600,
+    "packet_lines": 200,
+    "close_diff_chars": 30000
+  },
+  "chrome": null
+}
