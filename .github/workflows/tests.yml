@@ -12,11 +12,16 @@ permissions:
 jobs:
   unittest:
     name: python ${{ matrix.python }}
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
-        python: ["3.9", "3.13"]
+        include:
+          # ubuntu-latest no longer offers Python 3.9, so that job pins an older image.
+          - python: "3.9"
+            os: ubuntu-24.04
+          - python: "3.13"
+            os: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
 
