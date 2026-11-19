@@ -20,7 +20,12 @@ Asking a cheap model to "build the feature" fails in a predictable way. It wande
 
 The loop splits the work by what each side does well. Your Copilot CLI session writes the contract: the stack decision, small tasks, the files each task may touch, and the checks that prove each task done. A script then runs the loop with `copilot -p` on a cheap model. Executable checks decide "done", a judge gates what checks cannot see, and every run ends in a verdict.
 
-This is a port of claude-contract-loop, which follows [hermes-contract-loop](https://github.com/msebastianb/hermes-contract-loop). Copilot CLI has no structured-output flag, so the judge answers in plain JSON that the script checks, and the isolation comes from a fresh Copilot home for every call.
+Copilot CLI has no structured-output flag, so the judge answers in plain JSON that the script checks. Isolation comes from a fresh Copilot home for every call.
+
+## When to use
+
+- A coding task that splits into two or more small tasks, each with a command that proves it done.
+- Not for one-line fixes, pure exploration, or work that no command can check.
 
 ## Roles
 
@@ -166,25 +171,19 @@ python3 -m unittest discover -s tests -v
 - **Empty tool lists are refused.** `--available-tools=` with nothing after the equals sign shows every tool, so the script never builds that call.
 - **State outside the repo.** `init` refuses a dirty tree, because an acceptance check written beforehand would count as dirt.
 - **Globs use `fnmatch`**, where `*` also crosses `/`. Write `tests/**` for a whole tree.
-- **Separate runtime names.** The paths, variables and branch prefix (`copilot-contract-loop`, `COPILOT_CONTRACT_LOOP_*`, `cpl/`) do not collide with the claude or hermes versions, so they can run side by side.
+- **Own runtime names.** The paths, variables and branch prefix (`copilot-contract-loop`, `COPILOT_CONTRACT_LOOP_*`, `cpl/`) belong to this tool alone, so its state never mixes with another install.
 - **Private code** goes to the model providers behind GitHub Copilot, through your account.
 
-## Differences from claude-contract-loop
+## Notes on GitHub Copilot CLI
 
-- Models run through `copilot -p`, with `claude-haiku-4.5` as the default, not `claude -p --model haiku`.
-- Isolation uses a fresh `COPILOT_HOME` per call, where the claude version uses `--safe-mode` and `--setting-sources`.
-- Tool permissions use `--available-tools`, `--allow-tool` and `--deny-tool`, where the claude version uses `--tools`, `--allowedTools` and `--disallowedTools`.
+- Models run through `copilot -p`, with `claude-haiku-4.5` as the default. Any model ID that `copilot --model` accepts works in `roles.json`.
+- Isolation uses a fresh `COPILOT_HOME` per call. No settings, hooks, MCP servers, skills or saved approvals from your own Copilot setup reach a run.
+- Tool permissions use `--available-tools`, `--allow-tool` and `--deny-tool`. Copilot CLI shows a model only the tools it names, and a deny rule wins over every allow.
 - The judge has no `--json-schema`. Its answer is parsed from text and checked against the questions.
-- Spend is reported in premium requests and AI credits, not USD. `--max-ai-credits` is a soft cap.
-- There is no `--max-turns`. Copilot CLI has no per-run turn cap, so each call is bounded by `budget_s`, a wall-clock limit.
-- Session transcripts are not kept: `--no-session-persistence` does not exist here, so the temporary home that holds them is deleted after each call.
-
-## Differences from hermes-contract-loop
-
-- The models run through the Copilot CLI, not `hermes chat`.
-- No OpenRouter key: the scout, coder and judge all use the Copilot login.
-- No mockup generation. Put your own PNG in a task's `reference`. The coder reads it, and the visual gate compares the screenshot against it.
-- Isolation comes from a fresh `COPILOT_HOME`, where the hermes version uses `--ignore-rules`.
+- Spend is reported in premium requests and AI credits, not USD. `--max-ai-credits` is a soft cap, and Copilot CLI refuses values below 30.
+- This loop sets no turn cap for Copilot runs. Each call is bounded by `budget_s`, a wall-clock limit.
+- Session transcripts are not kept by this tool: the temporary home that holds the session events is deleted when each call ends.
+- No mockup generation in this loop. Put your own PNG in a task's `reference`. The coder reads it, and the visual gate compares the screenshot against it.
 
 ## License
 MIT. See [LICENSE](LICENSE).
