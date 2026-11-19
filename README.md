@@ -40,7 +40,7 @@ Copilot CLI has no structured-output flag, so the judge answers in plain JSON th
 ## How a run goes
 
 1. **`init`** checks the CLI, refuses a dirty tree, cuts branch `cpl/<stamp>`, and creates the state directory outside the repo.
-2. **`scout`** has Haiku read the repo and write a one-page brief. The scout is read-only.
+2. **`scout`** has Haiku 5.5 read the repo and write a one-page brief. The scout is read-only.
 3. **Contract.** You write `contract.json` from the example: the stack decision with a reason, the tasks, the `allowed` globs, the `protected` checks, and the real `launch` command.
 4. **`seal`** validates the contract and commits the checks.
 5. **`run`** implements the tasks in order. After each attempt, out-of-scope and protected changes are reverted, the checks run, and the scope gate judges the diff. A passing task becomes a `cpl(<task>)` commit. A task that fails the same way twice, stays red after three attempts, or gets rejected by the scope gate goes to escalation (exit 3).
@@ -73,7 +73,7 @@ cpl --repo <repo> close
 | Command | Does |
 |---|---|
 | `init [--force]` | CLI check, clean-tree check, branch `cpl/<stamp>`, state dir outside the repo |
-| `scout --goal "..."` | Haiku writes `brief.md` (asked to keep it to 60 lines), read-only |
+| `scout --goal "..."` | Haiku 5.5 writes `brief.md` (asked to keep it to 60 lines), read-only |
 | `seal` | Validates `contract.json`, commits the acceptance checks |
 | `run [--no-judge]` | Implements tasks in order. Exit 3 = escalation packet waiting |
 | `resolve <task>` | Accepts your own fix for an escalated task (checks must pass) |
@@ -104,7 +104,7 @@ Not enforced:
 
 ## Configuration
 
-`skills/copilot-contract-loop/roles.json` holds the models, tool lists, allow and deny rules, the environment allowlist, spend caps and limits. Override it per machine with `~/.config/copilot-contract-loop/roles.json` or the `COPILOT_CONTRACT_LOOP_ROLES` variable. Models are any model ID that `copilot --model` accepts, for example `claude-haiku-5.5` or `gpt-5.4-nano`. Change a model there, not in the prompts. `effort` is passed as `--reasoning-effort`. It defaults to `max`; `high` or `medium` spend fewer reasoning tokens per call.
+`skills/copilot-contract-loop/roles.json` holds the models, tool lists, allow and deny rules, the environment allowlist, spend caps and limits. Override it per machine with `~/.config/copilot-contract-loop/roles.json` or the `COPILOT_CONTRACT_LOOP_ROLES` variable. Models are any model ID that `copilot --model` accepts, for example `claude-haiku-5.5` or `gpt-5.4-nano`. Change a model there, not in the prompts. `effort` is passed as `--reasoning-effort`. It defaults to `max`; `high` or `medium` spend fewer reasoning tokens per call. Max effort uses more reasoning tokens, so check the spend in `status` on long runs.
 
 The override merges one level down (for example `coder.model`), but a list replaces the default list. If you set `deny`, copy the rules you want to keep.
 
@@ -145,6 +145,7 @@ Everything lives outside the repo, so a failed run never pollutes your worktree:
 
 - GitHub Copilot CLI, logged in with `copilot login`. Written against Copilot CLI 1.0.114.
 - Each model call uses premium requests. On the account used for testing, `claude-haiku-5.5` costs 1 premium request per call (checked live), and `claude-haiku-4.5` cost 0.33. Max effort can add reasoning tokens on top of that.
+- Access to `claude-haiku-5.5` on your account. If it is not available, the first call fails and names the model; change `model` in `roles.json`.
 - Python 3.9+ and git. `cpl.py` uses the standard library only.
 - Optional, for the visual gate: Chrome or Chromium, used headless for screenshots.
 
@@ -159,7 +160,7 @@ python3 -m unittest discover -s tests -v
 ## What has been run against the real CLI
 
 - Flags and event shapes were checked against Copilot CLI 1.0.114: a refused call, a file write, the JSON result and the usage file.
-- A full `init`, `seal`, `run` and `close` ran on a scratch repository with `claude-haiku-4.5`. The coder finished in one attempt, the scope gate accepted the diff (p=1.00), the checks and the launch passed, and the commit held only the file the task allowed.
+- A full `init`, `seal`, `run` and `close` ran on a scratch repository with `claude-haiku-4.5`, before the default moved to 5.5. The coder finished in one attempt, the scope gate accepted the diff (p=1.00), the checks and the launch passed, and the commit held only the file the task allowed.
 - The default configuration (`claude-haiku-5.5` at max effort) was checked with one live call: it returned OK and cost one premium request.
 - Not yet run live: the visual gate, escalation against a real model, and a login that lives only in `~/.copilot/config.json`.
 
