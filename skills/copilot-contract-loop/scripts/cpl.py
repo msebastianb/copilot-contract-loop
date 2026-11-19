@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """copilot-contract-loop driver.
 
-The architect (a GitHub Copilot CLI session on a strong model) writes a contract: small
+The architect (the strongest model selected in the current chat) writes a contract: small
 tasks, each with the files it may touch and the commands that prove it done. This script
 runs the loop without it: a cheap model, called through `copilot -p`, implements each task,
 the checks decide, a judge model gates what checks cannot see, and the architect is only
@@ -385,6 +385,8 @@ def copilot(roles: dict, name: str, prompt: str, repo: Path, logp: Path, scratch
     cmd += ["--allow-tool=" + rule for rule in allow]
     cmd += ["--deny-tool=" + rule for rule in deny]
     cmd += ["--add-dir=" + str(d) for d in add_dirs]
+    if role.get("effort"):
+        cmd.append("--reasoning-effort=%s" % role["effort"])
     env = dict(agent_env(roles), COPILOT_TASK_WAIT_TIMEOUT_SECONDS="0")
     if roles.get("isolate_home", True):
         env["COPILOT_HOME"] = str(home)  # fresh settings, hooks, MCP servers and saved approvals

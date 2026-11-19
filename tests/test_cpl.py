@@ -186,6 +186,7 @@ class Loop(Base):
         self.assertEqual(coder[coder.index("--output-format") + 1], "json")
         self.assertEqual(opt(coder, "--available-tools"), "view,create,edit,grep,glob,bash")
         self.assertEqual(rules(coder, "--allow-tool"), ["read", "write", "shell"])
+        self.assertIn("--reasoning-effort=max", coder)
         deny = rules(coder, "--deny-tool")
         for rule in ("shell(curl)", "read(.env)", "shell(git commit)"):
             self.assertIn(rule, deny)

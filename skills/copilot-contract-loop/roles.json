@@ -1,21 +1,24 @@
 {
   "isolate_home": true,
   "scout": {
-    "model": "claude-haiku-4.5",
+    "model": "claude-haiku-5.5",
+    "effort": "max",
     "tools": ["view", "grep", "glob"],
     "allow": ["read"],
     "max_ai_credits": 50,
     "budget_s": 300
   },
   "coder": {
-    "model": "claude-haiku-4.5",
+    "model": "claude-haiku-5.5",
+    "effort": "max",
     "tools": ["view", "create", "edit", "grep", "glob", "bash"],
     "allow": ["read", "write", "shell"],
     "max_ai_credits": 200,
     "budget_s": 900
   },
   "judge": {
-    "model": "claude-haiku-4.5",
+    "model": "claude-haiku-5.5",
+    "effort": "max",
     "tools": ["view"],
     "allow": [],
     "deny_extra": ["read"],
